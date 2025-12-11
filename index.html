@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="MDEET 기출 중요 개념 80문 암기카드">
+    <link rel="manifest" href="manifest.json">
+    <title>MDEET 기출 중요 개념 암기카드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #f9f9f9;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --card-front-bg: #2d2d2d;
+            --card-back-bg: #3a3a3a;
+            --shadow: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .app {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .theme-btn {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .stats {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-large {
+            padding: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        .study-mode {
+            display: none;
+        }
+
+        .study-mode.active {
+            display: block;
+        }
+
+        .study-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin: 2rem 0;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .card-front {
+            background: var(--card-front-bg);
+        }
+
+        .card-back {
+            background: var(--card-back-bg);
+            transform: rotateY(180deg);
+        }
+
+        .card-label {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .card-content {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            text-align: center;
+            word-break: keep-all;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+
+        .card-hint {
+            position: absolute;
+            bottom: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .controls .btn {
+            flex: 1;
+        }
+
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 1rem;
+            }
+
+            .flashcard {
+                height: 300px;
+            }
+
+            .card-content {
+                font-size: 1rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flashcard {
+                height: 250px;
+            }
+
+            .card-content {
+                font-size: 0.9rem;
+            }
+
+            .card-face {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 메인 화면 -->
+        <div id="mainScreen">
+            <div class="header">
+                <h1>MDEET 기출 중요 개념 암기카드</h1>
+                <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-number" id="cardCount">80</div>
+                <div class="stat-label">총 문제 수</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-large" onclick="startStudy()">📚 학습 시작하기</button>
+                <button class="btn" onclick="resetCards()">🔄 MDEET 80문 다시 불러오기</button>
+            </div>
+        </div>
+
+        <!-- 학습 모드 -->
+        <div id="studyMode" class="study-mode">
+            <div class="study-header">
+                <button class="btn" onclick="exitStudy()">← 나가기</button>
+                <div class="progress">
+                    <span id="currentCard">1</span> / <span id="totalCards">80</span>
+                </div>
+                <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+            </div>
+
+            <div class="card-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="card-face card-front">
+                        <div class="card-label">질문</div>
+                        <div class="card-content" id="cardFront"></div>
+                        <div class="card-hint">카드를 클릭하여 답변 보기</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-label">답변</div>
+                        <div class="card-content" id="cardBack"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="prevBtn" onclick="prevCard()">← 이전</button>
+                <button class="btn" onclick="flipCard()">
+                    <span id="flipBtnText">답변 보기</span>
+                </button>
+                <button class="btn" id="nextBtn" onclick="nextCard()">다음 →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MDEET 80문 데이터
+        const MDEET_CARDS = [
+  {
+    "id": 1,
+    "front": "진핵생물의 뉴클레오솜을 구성하는 히스톤 단백질에는 어떤 전하를 띤 아미노산이 풍부하며, 그 이유는 무엇인가?",
+    "back": "양전하성 아미노산(리신, 아르기닌)이 풍부하며, 이는 음전하를 띤 DNA의 인산 골격과 강하게 결합하기 위함이다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 2,
+    "front": "항체의 작용 기작 중, 바이러스나 독소에 결합하여 세포 감염이나 독성을 직접적으로 무력화시키는 작용을 무엇이라고 하는가?",
+    "back": "중화 작용 (neutralization)",
+    "category": "MDEET"
+  },
+  {
+    "id": 3,
+    "front": "항체가 병원체 표면에 결합하여 식세포의 포식작용을 촉진하는 현상을 무엇이라고 하는가?",
+    "back": "옵소닌화 작용 (opsonization)",
+    "category": "MDEET"
+  },
+  {
+    "id": 4,
+    "front": "음식 섭취 후 혈당이 높아질 때 췌장의 베타세포에서 분비되어 혈당을 낮추는 호르몬은 무엇인가?",
+    "back": "인슐린 (Insulin)",
+    "category": "MDEET"
+  },
+  {
+    "id": 5,
+    "front": "공복 상태에서 혈당이 낮아질 때 췌장의 알파세포에서 분비되어 혈당을 높이는 호르몬은 무엇인가?",
+    "back": "글루카곤 (Glucagon)",
+    "category": "MDEET"
+  },
+  {
+    "id": 6,
+    "front": "개구리 낭배 형성 시기 배아에서 척삭으로 발생할 운명을 지닌 부위는 어디인가?",
+    "back": "원구 상순부 (dorsal lip of the blastopore)",
+    "category": "MDEET"
+  },
+  {
+    "id": 7,
+    "front": "세균의 전사 조절 기작에서, _____은(는) 전사를 방해하는 단백질이고, _____은(는) 전사를 촉진하는 단백질이다.",
+    "back": "억제인자(repressor), 활성인자(activator)",
+    "category": "MDEET"
+  },
+  {
+    "id": 8,
+    "front": "트립토판 오페론에서 트립토판은 _____으로 작용하여 억제인자와 결합하고 전사를 억제한다.",
+    "back": "보조억제물질 (corepressor)",
+    "category": "MDEET"
+  },
+  {
+    "id": 9,
+    "front": "진핵세포에서 RNA 중합효소 II (RNAP II)의 C-말단 영역(CTD)의 Ser5가 인산화되면 어떤 인자가 결합하여 mRNA의 5' 말단 변형을 유도하는가?",
+    "back": "캡형성(5'-capping) 효소",
+    "category": "MDEET"
+  },
+  {
+    "id": 10,
+    "front": "진핵세포에서 분비 단백질이 합성되어 세포 밖으로 분비될 때 거치는 세포 소기관의 일반적인 경로는 무엇인가?",
+    "back": "조면소포체 → 골지체 → 분비 소낭 → 세포막",
+    "category": "MDEET"
+  },
+  {
+    "id": 11,
+    "front": "LDH(젖산 탈수소효소)와 같이 동일한 기능을 수행하지만 소단위체 구성이나 물리화학적 특성이 다른 효소들을 무엇이라고 하는가?",
+    "back": "동종효소 (isozyme)",
+    "category": "MDEET"
+  },
+  {
+    "id": 12,
+    "front": "바이러스에 감염된 세포가 바이러스 항원 조각을 어떤 MHC 분자를 통해 세포독성 T 림프구에 제시하는가?",
+    "back": "MHC class I",
+    "category": "MDEET"
+  },
+  {
+    "id": 13,
+    "front": "항원제시세포가 외부에서 포식한 세균의 항원 조각을 어떤 MHC 분자를 통해 보조 T 림프구에 제시하는가?",
+    "back": "MHC class II",
+    "category": "MDEET"
+  },
+  {
+    "id": 14,
+    "front": "세포자살(apoptosis) 과정에서 세포막 인지질 이중층의 안쪽 면에 있던 _____이(가) 바깥쪽 면으로 노출되어 식세포에 의한 제거 신호로 작용한다.",
+    "back": "포스파티딜세린 (phosphatidylserine)",
+    "category": "MDEET"
+  },
+  {
+    "id": 15,
+    "front": "청각 신호 전달 과정에서, 달팽이관 내 털세포의 섬모가 움직이면 기계적 자극에 의해 어떤 이온 채널이 열리는가?",
+    "back": "K+",
+    "category": "MDEET"
+  },
+  {
+    "id": 16,
+    "front": "대장균의 DNA 복제 후 발생하는 짝틀림(mismatch) 수선 과정에서, 수선 시스템은 주형 가닥과 새로 합성된 가닥을 어떻게 구별하는가?",
+    "back": "주형 가닥의 GATC 서열에 있는 아데닌(A)의 메틸화 여부로 구별한다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 17,
+    "front": "초파리 발생 과정에서 Ubx 유전자의 기능이 상실되면, 제3가슴마디(T3)에서 평형곤 대신 무엇이 형성되는가?",
+    "back": "날개 (wing)",
+    "category": "MDEET"
+  },
+  {
+    "id": 18,
+    "front": "세균의 적응 면역 시스템인 CRISPR-Cas9에서, Cas9 단백질이 표적 DNA를 절단하도록 유도하는 RNA는 무엇인가?",
+    "back": "가이드 RNA (gRNA), 구체적으로는 crRNA-tracrRNA 복합체이다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 19,
+    "front": "mTORC1 신호 전달 경로는 세포의 성장과 단백질 합성을 촉진하며, 세포 내 구성 성분을 분해하여 재활용하는 과정인 _____을(를) 억제한다.",
+    "back": "자가포식 (autophagy)",
+    "category": "MDEET"
+  },
+  {
+    "id": 20,
+    "front": "정상 심전도(ECG)에서 심실의 탈분극을 나타내는 파형은 무엇인가?",
+    "back": "QRS 복합파",
+    "category": "MDEET"
+  },
+  {
+    "id": 21,
+    "front": "정상 심전도(ECG)에서 심방의 탈분극을 나타내는 파형은 무엇인가?",
+    "back": "P파",
+    "category": "MDEET"
+  },
+  {
+    "id": 22,
+    "front": "체액성 면역 반응에서 기억 B 림프구를 생성하고 항체 생산을 최적화하기 위해 필수적인 도움을 주는 T 림프구는 무엇인가?",
+    "back": "CD4 T 림프구 (보조 T 림프구)",
+    "category": "MDEET"
+  },
+  {
+    "id": 23,
+    "front": "MTT 분석법은 세포의 생존도를 측정하는 방법으로, 살아있는 세포의 미토콘드리아에 있는 _____ 효소가 MTT를 보라색의 formazan으로 환원시키는 원리를 이용한다.",
+    "back": "산화환원효소 (reductase)",
+    "category": "MDEET"
+  },
+  {
+    "id": 24,
+    "front": "유전자 지도 작성 시, 세 유전자의 연관 순서를 결정하기 위해 교차율을 비교할 때, 가장 거리가 먼 두 유전자 사이의 교차율은 나머지 두 거리의 합과 어떤 관계를 보이는가?",
+    "back": "두 거리의 합과 거의 같거나 약간 작으며, 이를 통해 가운데 위치한 유전자를 결정할 수 있다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 25,
+    "front": "시냅스후 뉴런의 막전위를 -70mV로 고정했을 때 내향 전류가, 0mV로 고정했을 때 외향 전류가 관찰된다면, 이 뉴런은 어떤 종류의 시냅스 전달을 모두 받는가?",
+    "back": "흥분성 시냅스 전달과 억제성 시냅스 전달을 모두 받는다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 26,
+    "front": "척추동물 배아 발생 과정에서, 척삭(notochord)과 신경관 바닥판(floor plate)에서 분비되어 체절의 복측 분화를 유도하는 신호 단백질은 무엇인가?",
+    "back": "소닉 헤지호그 (SHH, Sonic hedgehog)",
+    "category": "MDEET"
+  },
+  {
+    "id": 27,
+    "front": "어머니가 섭취한 먹이가 태아의 DNA _____ 패턴에 영향을 주어 자손의 표현형(예: 털색)을 변화시키는 현상은 후성유전학적 조절의 예이다.",
+    "back": "메틸화 (methylation)",
+    "category": "MDEET"
+  },
+  {
+    "id": 28,
+    "front": "콩팥의 사구체에서 여과된 포도당은 세뇨관에서 재흡수되는데, 혈장 포도당 농도가 특정 수준 이상으로 높아지면 재흡수되지 못하고 소변으로 배출된다. 이 때의 혈장 포도당 농도를 무엇이라고 하는가?",
+    "back": "신장 역치 (renal threshold)",
+    "category": "MDEET"
+  },
+  {
+    "id": 29,
+    "front": "조류의 성은 ZW 염색체 시스템으로 결정된다. 암컷의 성염색체 구성은 무엇인가?",
+    "back": "ZW",
+    "category": "MDEET"
+  },
+  {
+    "id": 30,
+    "front": "부신겉질호르몬 합성 과정에서 특정 효소가 결핍되면, 해당 효소의 기질이 되는 중간 대사 산물은 혈중 농도가 _____하고 최종 산물은 _____한다.",
+    "back": "증가, 감소",
+    "category": "MDEET"
+  },
+  {
+    "id": 31,
+    "front": "활동 전위의 발생 빈도는 자극의 _____에 비례하여 증가하며, 이는 활동 전위 자체의 크기가 변하지 않는 실무율(all-or-none principle)에 따른다.",
+    "back": "세기 (intensity)",
+    "category": "MDEET"
+  },
+  {
+    "id": 32,
+    "front": "헤모글로빈에 대한 일산화탄소(CO)의 친화도는 산소($O_2$)보다 훨씬 높아, CO에 노출되면 조직으로의 산소 운반이 심각하게 저해된다. 이로 인해 산소포화도 곡선은 어느 쪽으로 이동하는가?",
+    "back": "왼쪽 (left shift)",
+    "category": "MDEET"
+  },
+  {
+    "id": 33,
+    "front": "양서류 외배엽 분화 과정에서 BMP 신호는 _____ 발생을 유도하고, Noggin과 같은 BMP 저해제는 _____ 발생을 유도한다.",
+    "back": "표피(epidermis), 신경조직(neural tissue)",
+    "category": "MDEET"
+  },
+  {
+    "id": 34,
+    "front": "격렬한 무산소 운동 시 근육에서 생성된 젖산이 혈액을 통해 간으로 이동하여 포도당으로 전환된 후 다시 근육으로 공급되는 대사 경로를 무엇이라고 하는가?",
+    "back": "코리 회로 (Cori cycle)",
+    "category": "MDEET"
+  },
+  {
+    "id": 35,
+    "front": "해마에서 장기 강화(LTP)가 유도되는 데 필수적인 수용체로, 시냅스후 뉴런의 탈분극과 글루탐산 결합이 동시에 충족되어야 활성화되는 수용체는 무엇인가?",
+    "back": "NMDA 수용체",
+    "category": "MDEET"
+  },
+  {
+    "id": 36,
+    "front": "젖당 오페론에서 포도당이 있을 때 cAMP 농도가 낮아져 CAP 단백질이 활성화되지 못하고, 이로 인해 젖당이 있어도 젖당 오페론의 전사가 강하게 일어나지 못하는 현상은 무엇인가?",
+    "back": "이화산물 억제 (catabolite repression)",
+    "category": "MDEET"
+  },
+  {
+    "id": 37,
+    "front": "ABO식 혈액형 유전자와 H 인자 유전자가 상호작용할 때, 유전자형이 hh이면 IA나 IB 유전자를 가져도 항원이 발현되지 않아 O형으로 표현되는 현상은 무엇인가?",
+    "back": "상위성 (epistasis)의 한 예인 봄베이 표현형(Bombay phenotype)이다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 38,
+    "front": "병원체에 따라 주된 면역 반응이 다르다. 세포 내 세균이나 바이러스 감염 시에는 주로 어떤 면역 반응이 중요한 역할을 하는가?",
+    "back": "세포성 면역 (cell-mediated immunity), 특히 세포독성 T 림프구의 역할이 중요하다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 39,
+    "front": "초파리의 위치효과 얼룩짐(PEV) 현상에서, 진정염색질에 있던 유전자가 이질염색질 근처로 재배열되면 유전자의 발현이 어떻게 되는가?",
+    "back": "불안정하게 억제되어 모자이크 표현형을 나타낸다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 40,
+    "front": "세균 세포벽의 주요 구성 성분으로, N-아세틸글루코사민(NAG)과 N-아세틸뮤람산(NAM)이 β(1,4)-글리코시드 결합으로 연결된 다당류 사슬과 펩타이드 사슬로 이루어진 중합체는 무엇인가?",
+    "back": "펩티도글리칸 (peptidoglycan)",
+    "category": "MDEET"
+  },
+  {
+    "id": 41,
+    "front": "동물 세포 사이의 연접 구조 중, 이온이나 작은 분자들이 한 세포에서 인접 세포로 직접 이동할 수 있도록 통로를 형성하는 것은 무엇인가?",
+    "back": "간극 연접 (gap junction)",
+    "category": "MDEET"
+  },
+  {
+    "id": 42,
+    "front": "DNA 복제 시 지연 가닥에서 생성되는 짧은 DNA 조각인 오카자키 절편들을 연결하기 위해, RNA 프라이머를 제거하고 그 자리를 DNA로 채운 뒤, 최종적으로 인산다이에스터 결합을 형성하는 효소는 무엇인가?",
+    "back": "DNA 연결효소 (DNA ligase)",
+    "category": "MDEET"
+  },
+  {
+    "id": 43,
+    "front": "시토신(C)이 탈아민화되면 우라실(U)이 되는데, 이는 DNA에 존재하지 않는 염기이므로 쉽게 인식되어 수선된다. 반면, 5-메틸시토신(5-mC)이 탈아민화되면 어떤 염기가 생성되어 돌연변이의 다발점(hotspot)이 되는가?",
+    "back": "티민 (Thymine, T)",
+    "category": "MDEET"
+  },
+  {
+    "id": 44,
+    "front": "망막의 막대세포는 어두울 때 _____ 농도가 높아 양이온 채널이 열려있어 탈분극 상태를 유지하고, 빛을 받으면 이 물질이 분해되어 과분극된다.",
+    "back": "cGMP",
+    "category": "MDEET"
+  },
+  {
+    "id": 45,
+    "front": "전사 인자 CREB는 인산화되어야만 DNA의 CRE 부위에 강하게 결합하고 전사 활성을 나타낸다. 이러한 단백질의 활성 조절 방식을 무엇이라고 하는가?",
+    "back": "번역 후 변형 (post-translational modification)",
+    "category": "MDEET"
+  },
+  {
+    "id": 46,
+    "front": "그람 음성균의 외막에 존재하는 지질다당체(LPS)는 숙주에 강력한 염증 반응을 유발하는 내독소(endotoxin)로 작용하는데, 독성을 나타내는 주요 부분은 어디인가?",
+    "back": "지질 A (Lipid A)",
+    "category": "MDEET"
+  },
+  {
+    "id": 47,
+    "front": "미토콘드리아의 산화적 인산화 과정에서, 전자 전달계는 정상적으로 작동하지만 ATP 합성효소(ATP synthase)를 통한 양성자 이동을 막아 ATP 합성을 저해하는 물질은 무엇인가?",
+    "back": "올리고마이신 (Oligomycin)",
+    "category": "MDEET"
+  },
+  {
+    "id": 48,
+    "front": "정자 형성 과정에서만 특정 유전자의 조절 부위(ICR, DMR)가 메틸화되어 부계로부터 물려받은 대립유전자만 발현되는 현상을 무엇이라고 하는가?",
+    "back": "유전적 각인 (genomic imprinting)",
+    "category": "MDEET"
+  },
+  {
+    "id": 49,
+    "front": "효소 반응 속도론에서, 경쟁적 저해제는 효소의 _____ 값은 증가시키지만, _____ 값은 변화시키지 않는다.",
+    "back": "KM (미카엘리스 상수), Vmax (최대 반응 속도)",
+    "category": "MDEET"
+  },
+  {
+    "id": 50,
+    "front": "엽록체 DNA에 존재하는 유전자에 의해 결정되는 형질은, 엽록체가 주로 난자를 통해 자손에게 전달되므로 _____ 유전 양상을 보인다.",
+    "back": "모계 유전 (maternal inheritance)",
+    "category": "MDEET"
+  },
+  {
+    "id": 51,
+    "front": "cyclin-CDK 복합체는 세포 주기를 조절하는 핵심 인자이다. M기 진입과 진행을 조절하는 주요 복합체는 무엇인가?",
+    "back": "Cyclin B-CDK1 (MPF, Maturation-promoting factor)",
+    "category": "MDEET"
+  },
+  {
+    "id": 52,
+    "front": "형태 형성 물질(morphogen)은 농도 기울기에 따라 주변 세포들이 서로 다른 유전자를 발현하도록 유도하여 다양한 세포 운명을 결정한다. 제브라피쉬 배아에서 이러한 역할을 하는 대표적인 단백질은 무엇인가?",
+    "back": "Nodal 단백질",
+    "category": "MDEET"
+  },
+  {
+    "id": 53,
+    "front": "콜히친(colchicine)은 _____의 중합을 방해하여 방추사 형성을 억제하므로, 세포 분열 중기(M기)에서 세포 주기를 멈추게 한다.",
+    "back": "미세소관 (microtubule)",
+    "category": "MDEET"
+  },
+  {
+    "id": 54,
+    "front": "교감 신경의 신경절이후뉴런 말단에서 분비되는 주요 신경전달물질은 무엇인가?",
+    "back": "노르에피네프린 (Norepinephrine)",
+    "category": "MDEET"
+  },
+  {
+    "id": 55,
+    "front": "대장균에서 TPP(thiamine pyrophosphate)가 존재할 때, thiMD mRNA의 5' UTR에 있는 _____ 구조가 변하여 리보솜 결합 부위를 가림으로써 번역을 억제한다.",
+    "back": "리보스위치 (riboswitch)",
+    "category": "MDEET"
+  },
+  {
+    "id": 56,
+    "front": "하디-바인베르크 평형을 이루는 집단에서, 대립유전자 빈도가 p와 q일 때, 이형접합자(heterozygote)의 빈도는 어떻게 계산되는가?",
+    "back": "2pq",
+    "category": "MDEET"
+  },
+  {
+    "id": 57,
+    "front": "인플루엔자 바이러스와 같은 음성(-) 단일가닥 RNA 바이러스는 숙주세포에 침입한 후, 자신의 유전체를 주형으로 mRNA를 합성하기 위해 어떤 효소를 반드시 가지고 있어야 하는가?",
+    "back": "RNA 의존성 RNA 중합효소 (RNA-dependent RNA polymerase)",
+    "category": "MDEET"
+  },
+  {
+    "id": 58,
+    "front": "보체계(complement system)는 세균을 제거하기 위해 막공격복합체(MAC)를 형성하여 세균을 직접 용해시키거나, _____ 과정으로 식세포 작용을 촉진한다.",
+    "back": "옵소닌화 (opsonization)",
+    "category": "MDEET"
+  },
+  {
+    "id": 59,
+    "front": "심박출량과 정맥환류량이 모두 증가하는 조건은 심장의 수축력이 증가하거나 말초 혈관의 저항이 감소할 때 나타난다. 세동맥을 이완시키는 약물을 투여하면 어떤 변화가 일어나는가?",
+    "back": "총말초저항이 감소하여 정맥환류량과 심박출량이 모두 증가한다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 60,
+    "front": "세포 내이입(endocytosis) 과정에서 소낭이 세포막으로부터 완전히 분리될 때, 소낭의 목 부분을 잘라주는 역할을 하는 단백질은 무엇인가?",
+    "back": "다이나민 (dynamin)",
+    "category": "MDEET"
+  },
+  {
+    "id": 61,
+    "front": "피리미딘 생합성의 조절 효소인 ATCase는 최종 산물인 CTP에 의해 활성이 억제되고, 퓨린인 ATP에 의해 활성이 촉진된다. 이와 같이 효소의 활성 부위가 아닌 다른 부위에 물질이 결합하여 활성을 조절하는 효소를 무엇이라 하는가?",
+    "back": "다른자리입체성 효소 (allosteric enzyme)",
+    "category": "MDEET"
+  },
+  {
+    "id": 62,
+    "front": "항이뇨호르몬(ADH)은 콩팥의 _____에 작용하여 수분 재흡수를 촉진하며, 혈장 삼투압이 높거나 세포외액량이 감소했을 때 분비가 증가한다.",
+    "back": "집합관 (collecting duct)",
+    "category": "MDEET"
+  },
+  {
+    "id": 63,
+    "front": "세포성 면역 반응과 체액성 면역 반응을 유도하는 백신의 효과를 증진시키기 위해 항원과 함께 투여하는 물질을 무엇이라고 하는가?",
+    "back": "보강제 (adjuvant)",
+    "category": "MDEET"
+  },
+  {
+    "id": 64,
+    "front": "붉은빵곰팡이와 같은 자낭균류는 유성 생식 결과, _____ 안에 8개의 _____를 형성한다.",
+    "back": "자낭 (ascus), 자낭포자 (ascospore)",
+    "category": "MDEET"
+  },
+  {
+    "id": 65,
+    "front": "코흐의 4원칙은 특정 _____이(가) 특정 _____의 원인임을 증명하기 위한 일련의 실험적 지침이다.",
+    "back": "미생물, 질병",
+    "category": "MDEET"
+  },
+  {
+    "id": 66,
+    "front": "히스티딘의 등전점(pI)은 곁사슬(R기)의 이미다졸 고리가 이온화되기 때문에, α-카르복실기와 α-아미노기의 pKa 값뿐만 아니라 _____의 pKa 값도 고려하여 계산해야 한다.",
+    "back": "곁사슬 (R기)",
+    "category": "MDEET"
+  },
+  {
+    "id": 67,
+    "front": "폐의 환기-관류 불균형에서, 폐포 환기는 정상이지만 혈액 관류가 차단된 경우(예: 폐색전증) 환기-관류 비율(V/Q ratio)은 어떻게 변하는가?",
+    "back": "무한대에 가깝게 증가한다 (V/Q → ∞).",
+    "category": "MDEET"
+  },
+  {
+    "id": 68,
+    "front": "초파리의 신경세포 가지돌기가 서로 겹치지 않고 분포하는 '자기 회피(self-avoidance)' 현상은 어떤 유전자가 만들어내는 다양한 단백질 변이체에 의해 조절되는가?",
+    "back": "DSCAM1 유전자",
+    "category": "MDEET"
+  },
+  {
+    "id": 69,
+    "front": "CD4 T 세포 아형 중, B 세포가 형질세포로 분화하고 고친화도 항체를 생성하도록 돕는 역할을 전문적으로 수행하는 세포는 무엇인가?",
+    "back": "여포 보조 T 세포 (Tfh, Follicular helper T cell)",
+    "category": "MDEET"
+  },
+  {
+    "id": 70,
+    "front": "히스톤 H3의 9번 라이신(H3K9)이 _____되면 이질염색질 형성이 촉진되어 유전자 발현이 억제되고, _____되면 유전자 발현이 활성화되는 경향이 있다.",
+    "back": "메틸화 (methylation), 아세틸화 (acetylation)",
+    "category": "MDEET"
+  },
+  {
+    "id": 71,
+    "front": "운동 단백질인 키네신(kinesin)과 디네인(dynein)은 모두 미세소관을 따라 물질을 수송한다. 세포의 중심체 쪽(- 말단)으로 이동하는 단백질은 무엇인가?",
+    "back": "디네인 (dynein)",
+    "category": "MDEET"
+  },
+  {
+    "id": 72,
+    "front": "텔로머레이스는 _____와(과) _____로 구성된 복합체로, 염색체 말단인 텔로미어의 길이를 유지하는 역할을 한다.",
+    "back": "역전사효소 (reverse transcriptase), RNA 주형 (RNA template)",
+    "category": "MDEET"
+  },
+  {
+    "id": 73,
+    "front": "레트로바이러스를 이용한 유전자 치료 벡터에서, 바이러스 복제에 필요한 gag, pol, env 유전자는 벡터에서 제거하고 패키징 세포(packaging cell)에서 따로 발현시킨다. 그 이유는 무엇인가?",
+    "back": "치료용 세포에서 바이러스가 증식하여 병을 일으키는 것을 막고 안전성을 높이기 위함이다.",
+    "category": "MDEET"
+  },
+  {
+    "id": 74,
+    "front": "기억 CD8 T 세포 중, 림프절과 같은 2차 림프 기관에 주로 머물며 재감염 시 빠르게 증식하여 작동 T 세포로 분화하는 아형은 무엇인가?",
+    "back": "중심 기억 T 세포 (Central memory T cell)",
+    "category": "MDEET"
+  },
+  {
+    "id": 75,
+    "front": "DNA 복제 개시 조절 단백질인 SeqA는 _____ 상태의 oriC에 결합하여 DNA 복제가 한 번의 세포 주기 동안 여러 번 일어나는 것을 방지한다.",
+    "back": "반메틸화 (hemi-methylation)",
+    "category": "MDEET"
+  },
+  {
+    "id": 76,
+    "front": "유전자형에 따라 표현형이 나타날 확률이 달라지는 유전 현상을 무엇이라고 하며, 이는 환경적 요인이나 다른 유전자의 영향을 받기 때문에 발생할 수 있는가?",
+    "back": "불완전 침투 (incomplete penetrance)",
+    "category": "MDEET"
+  },
+  {
+    "id": 77,
+    "front": "유전자 편집 기술인 CRISPR/Cas9에서, 절단된 DNA가 주형으로 제공된 donor DNA의 서열을 이용하여 수선되는 과정을 무엇이라고 하는가?",
+    "back": "상동 의존 수선 (HDR, Homology-Directed Repair)",
+    "category": "MDEET"
+  },
+  {
+    "id": 78,
+    "front": "암세포는 산소가 충분한 조건에서도 해당과정을 통해 젖산을 생성하는 비효율적인 대사를 선호하는데, 이를 무엇이라고 하는가?",
+    "back": "호기성 해당작용 (aerobic glycolysis) 또는 바르부르크 효과 (Warburg effect)",
+    "category": "MDEET"
+  },
+  {
+    "id": 79,
+    "front": "억제성 신경전달물질인 GABA가 GABAB 수용체에 결합하면, G 단백질을 통해 어떤 이온 통로가 열려 과분극을 유발하는가?",
+    "back": "K+ 통로",
+    "category": "MDEET"
+  },
+  {
+    "id": 80,
+    "front": "세포자살(apoptosis) 초기 단계의 세포를 탐지하기 위해 사용되는 Annexin V는 세포막의 어떤 변화를 인식하여 결합하는가?",
+    "back": "세포막 바깥쪽으로 노출된 포스파티딜세린(phosphatidylserine)을 인식한다.",
+    "category": "MDEET"
+  }
+];
+
+        let cards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let theme = 'light';
+
+        // 초기화
+        function init() {
+            // 로컬 스토리지에서 카드 로드
+            const savedCards = localStorage.getItem('flashcards');
+            if (savedCards) {
+                cards = JSON.parse(savedCards);
+            } else {
+                // 처음 방문 시 MDEET 80문 자동 로드
+                cards = MDEET_CARDS;
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+            }
+
+            // 테마 로드
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                theme = savedTheme;
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                theme = prefersDark ? 'dark' : 'light';
+            }
+            applyTheme();
+
+            // 카드 수 업데이트
+            document.getElementById('cardCount').textContent = cards.length;
+        }
+
+        function toggleTheme() {
+            theme = theme === 'light' ? 'dark' : 'light';
+            applyTheme();
+            localStorage.setItem('theme', theme);
+        }
+
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeButtons = document.querySelectorAll('.theme-btn');
+            themeButtons.forEach(btn => {
+                btn.textContent = theme === 'light' ? '🌙' : '☀️';
+            });
+        }
+
+        function startStudy() {
+            if (cards.length === 0) return;
+            currentIndex = 0;
+            isFlipped = false;
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('studyMode').classList.add('active');
+            updateCard();
+        }
+
+        function exitStudy() {
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('studyMode').classList.remove('active');
+            currentIndex = 0;
+            isFlipped = false;
+        }
+
+        function updateCard() {
+            const card = cards[currentIndex];
+            document.getElementById('cardFront').textContent = card.front;
+            document.getElementById('cardBack').textContent = card.back;
+            document.getElementById('currentCard').textContent = currentIndex + 1;
+            document.getElementById('totalCards').textContent = cards.length;
+
+            // 버튼 상태 업데이트
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === cards.length - 1;
+
+            // 카드 뒤집기 초기화
+            if (isFlipped) {
+                flipCard();
+            }
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            flashcard.classList.toggle('flipped');
+            document.getElementById('flipBtnText').textContent = isFlipped ? '질문 보기' : '답변 보기';
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        function resetCards() {
+            if (confirm('MDEET 80문을 다시 불러오시겠습니까?')) {
+                cards = MDEET_CARDS;
+                localStorage.setItem('flashcards', JSON.stringify(cards));
+                document.getElementById('cardCount').textContent = cards.length;
+                alert('MDEET 80문이 다시 로드되었습니다!');
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        init();
+
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>

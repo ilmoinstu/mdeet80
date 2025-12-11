@@ -1,0 +1,22 @@
+{
+  "name": "MDEET 기출 중요 개념 암기카드",
+  "short_name": "MDEET 암기카드",
+  "description": "MDEET 기출 중요 개념 80문 암기카드",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
